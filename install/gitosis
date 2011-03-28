@@ -16,7 +16,6 @@ echo
 $sudo apt-get install python-setuptools
 $sudo yum install python-setuptools
 
-PATH=$(git --exec-path):$PATH
 
 echo "== Get $package =="
 echo
@@ -59,7 +58,7 @@ then
     then
         if [ -e "$key" ]
         then
-            $sudo -H -u $username gitosis-init < $key
+            $sudo -H -u $username PATH=$(git --exec-path):$PATH gitosis-init < $key
         else
             tmpfile="$(mktemp -t gitosis.XXXXXXXX)"
             echo "$key" > $tmpfile
