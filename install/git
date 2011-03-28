@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+if [[ "root" = "$(whoami)" ]] ; then
+  sudo=""
+  src_path=/usr/local/src
+else
+  sudo="sudo"
+  src_path=$HOME/.src
+fi
+
+package=git 
+version=1.7.4.2
+
+mkdir -p $src_path
+cd $src_path
+curl -O -L http://kernel.org/pub/software/scm/git/$package-$version.tar.bz2 
+tar jxf $package-$version.tar.bz2 
+cd $package-$version 
+
+./configure --prefix=/usr/local 
+
+make -j2 
+
+$sudo make install
+
