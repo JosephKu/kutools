@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+if [[ "root" = "$(whoami)" ]] ; then
+  sudo=""
+  src_path=/usr/local/src
+else
+  sudo="sudo"
+  src_path=$HOME/.src
+fi
+
+$sudo apt-get install python-setuptools
+$sudo yum install python-setuptools
+
+package=''
+version=''
+repo="git://eagain.net/gitosis.git"
+
+username='gitosis'
+directory='/srv/gitosis'
+
+mkdir -p $src_path
+cd $src_path
+git clone $repo
+
+$sudo python setup.py install
+
+echo "== Add user 'gitosis' =="
+
