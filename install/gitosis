@@ -8,21 +8,69 @@ else
   src_path=$HOME/.src
 fi
 
+package='gitosis'
+version='0.2'
+
+echo "== Install required packages =="
+echo
 $sudo apt-get install python-setuptools
 $sudo yum install python-setuptools
 
-package=''
-version=''
+PATH=$(git --exec-path):$PATH
+
+echo "== Get $package =="
+echo
 repo="git://eagain.net/gitosis.git"
 
 username='gitosis'
-directory='/srv/gitosis'
+user_home='/srv/gitosis'
+key="$HOME"/.ssh/id_rsa.pub
 
 mkdir -p $src_path
 cd $src_path
 git clone $repo
 
+echo "== Install $package =="
+echo
+cd $package
 $sudo python setup.py install
 
-echo "== Add user 'gitosis' =="
+echo "== Add user '$username' =="
+echo
+
+if ! getent passwd | grep -q $username
+then
+    $sudo adduser --quiet --system --home $user_home --shell /bin/sh --disable-password --no-create-home --gecos 'git repository hosting' --group $username
+    # For Red Hat / Fedora
+    #$sudo adduser -r -d /srv/gitosis -s /bin/sh -M $username
+    #$sudo passwd -d $username
+else
+    echo "gitosis user ($gitosis) already exists, doing nothing."
+fi
+
+if [ ! -d "$user_home" ]
+then
+    $sudo mkdir -p "$user_home"
+    $sudo ln -s "$user_home"/repositories "$user_home"/git
+    $sudo chown -R $username:$username $user_home
+
+    echo "== Import admin key =="
+    if [ -n "$key" ]
+    then
+        if [ -e "$key" ]
+        then
+            $sudo -H -u $username gitosis-init < $key
+        else
+            tmpfile="$(mktemp -t gitosis.XXXXXXXX)"
+            echo "$key" > $tmpfile
+            rm -f $tmpfile
+        fi
+    fi
+else
+    echo "gitosis user home directory ($user_home) already exists."
+    echo
+fi
+
+echo "Done!"
+echo
 
